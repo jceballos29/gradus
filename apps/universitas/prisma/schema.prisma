@@ -1,0 +1,222 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────
+
+enum Mode {
+  IN_PERSON
+  REMOTE
+}
+
+enum Area {
+  BASIC
+  SPECIFIC
+  COMPLEMENTARY
+}
+
+enum UserRole {
+  STUDENT
+  COORDINATOR
+}
+
+enum StudentStatus {
+  ACTIVE
+  WITHDRAWN
+  GRADUATED
+  SUSPENDED
+}
+
+enum SubjectStatus {
+  IN_PROGRESS
+  PASSED
+  FAILED
+  WITHDRAWN
+}
+
+// ─── Catálogo académico ──────────────────────────────────
+
+model Institution {
+  id        String    @id @default(uuid())
+  name      String    @db.VarChar(255)
+  nit       String    @unique @db.VarChar(20)
+  enabled   Boolean   @default(true)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  faculties Faculty[]
+
+  @@map("institutions")
+}
+
+model Faculty {
+  id            String      @id @default(uuid())
+  institutionId String      @map("institution_id")
+  name          String      @db.VarChar(255)
+  enabled       Boolean     @default(true)
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime    @updatedAt @map("updated_at") @db.Timestamptz
+
+  institution Institution @relation(fields: [institutionId], references: [id])
+  programs    Program[]
+
+  @@map("faculties")
+}
+
+model Program {
+  id        String  @id @default(uuid())
+  facultyId String  @map("faculty_id")
+  code      String  @unique @db.VarChar(20)
+  name      String  @db.VarChar(255)
+  mode      Mode
+  enabled   Boolean @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  faculty Faculty @relation(fields: [facultyId], references: [id])
+  pensums Pensum[]
+
+  @@map("programs")
+}
+
+model Pensum {
+  id                  String  @id @default(uuid())
+  programId           String  @map("program_id")
+  code                String  @db.VarChar(50)
+  periods             Int
+  totalCredits        Int     @map("total_credits")
+  maxCreditsPerPeriod Int     @map("max_credits_per_period")
+  enabled             Boolean @default(true)
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  program  Program   @relation(fields: [programId], references: [id])
+  subjects Subject[]
+  students Student[]
+
+  @@unique([programId, code])
+  @@map("pensums")
+}
+
+model Subject {
+  id        String  @id @default(uuid())
+  pensumId  String  @map("pensum_id")
+  code      String  @db.VarChar(20)
+  name      String  @db.VarChar(255)
+  credits   Int
+  period    Int
+  area      Area
+  subarea   String? @db.VarChar(100)
+  enabled   Boolean @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  pensum          Pensum           @relation(fields: [pensumId], references: [id])
+  prerequisites   Subject[]        @relation("SubjectPrerequisites")
+  requiredBy      Subject[]        @relation("SubjectPrerequisites")
+  academicRecords AcademicRecord[]
+
+  @@unique([pensumId, code])
+  @@map("subjects")
+}
+
+// ─── Usuarios ────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(uuid())
+  identity  String   @unique @db.VarChar(50)
+  firstName String   @map("first_name") @db.VarChar(100)
+  lastName  String   @map("last_name") @db.VarChar(100)
+  email     String   @unique @db.VarChar(255)
+  role      UserRole
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  student Student?
+
+  @@map("users")
+}
+
+model Student {
+  id             String        @id @default(uuid())
+  userId         String        @unique @map("user_id")
+  pensumId       String        @map("pensum_id")
+  studentCode    String        @unique @map("student_code") @db.VarChar(20)
+  campus         String        @db.VarChar(100)
+  enrollmentDate DateTime      @map("enrollment_date") @db.Date
+  status         StudentStatus @default(ACTIVE)
+  creditsEarned  Int           @default(0) @map("credits_earned")
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  user            User             @relation(fields: [userId], references: [id])
+  pensum          Pensum           @relation(fields: [pensumId], references: [id])
+  academicRecords AcademicRecord[]
+
+  @@map("students")
+}
+
+// ─── Historial académico ─────────────────────────────────
+
+model AcademicRecord {
+  id               String        @id @default(uuid())
+  studentId        String        @map("student_id")
+  subjectId        String        @map("subject_id")
+  term             String        @db.VarChar(10)
+  status           SubjectStatus @default(IN_PROGRESS)
+  finalGrade       Decimal?      @map("final_grade") @db.Decimal(4, 2)
+  absences         Int           @default(0)
+  meetsAttendance  Boolean       @default(true) @map("meets_attendance")
+  notes            String?       @db.Text
+  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  student       Student        @relation(fields: [studentId], references: [id])
+  subject       Subject        @relation(fields: [subjectId], references: [id])
+  partialGrades PartialGrade[]
+
+  @@unique([studentId, subjectId, term])
+  @@map("academic_records")
+}
+
+model PartialGrade {
+  id               String   @id @default(uuid())
+  academicRecordId String   @map("academic_record_id")
+  order            Int
+  name             String   @db.VarChar(50)
+  percentage       Decimal  @db.Decimal(5, 2)
+  grade            Decimal? @db.Decimal(4, 2)
+  absences         Int      @default(0)
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  academicRecord AcademicRecord @relation(fields: [academicRecordId], references: [id], onDelete: Cascade)
+
+  @@unique([academicRecordId, order])
+  @@map("partial_grades")
+}
+
+// ─── Períodos académicos ─────────────────────────────────
+
+model AcademicPeriod {
+  id        String   @id @default(uuid())
+  code      String   @unique @db.VarChar(10)
+  startDate DateTime @map("start_date") @db.Date
+  endDate   DateTime @map("end_date") @db.Date
+  active    Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("academic_periods")
+}

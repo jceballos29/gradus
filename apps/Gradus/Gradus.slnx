@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Gradus.API/Gradus.API.csproj" />
+  <Project Path="Gradus.Application/Gradus.Application.csproj" />
+  <Project Path="Gradus.Domain/Gradus.Domain.csproj" />
+  <Project Path="Gradus.Infrastructure/Gradus.Infrastructure.csproj" />
+</Solution>

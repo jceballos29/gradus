@@ -1,0 +1,8 @@
+# Gradus API — HTTP Client
+# Requiere extensión "REST Client" en VS Code
+# Los endpoints OAuth se agregan aquí en la Fase 2
+
+@host = http://localhost:5002
+
+### Health check
+GET {{host}}/health
