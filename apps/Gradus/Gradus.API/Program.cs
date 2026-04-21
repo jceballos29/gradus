@@ -1,3 +1,7 @@
+using Gradus.Infrastructure;
+using Gradus.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // ── Servicios ──────────────────────────────────────────────
@@ -7,8 +11,22 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+// ── Infrastructure ─────────────────────────────────────────
+builder.Services.AddInfrastructure(builder.Configuration);
+
 // ── Pipeline HTTP ───────────────────────────────────────────
 var app = builder.Build();
+
+// ── Migración y seed automático en desarrollo ──────────────
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<GradusDbContext>();
+    await db.Database.MigrateAsync();
+
+    var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
+    await seeder.SeedAsync();
+}
 
 // HTTPS solo en producción — en desarrollo lo maneja Nginx
 if (!app.Environment.IsDevelopment())
