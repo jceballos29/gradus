@@ -101,6 +101,16 @@ npm run dev                   # http://localhost:3003
 ```bash
 cd apps/Gradus
 dotnet restore
+
+# Configurar secretos locales (solo primera vez)
+dotnet user-secrets init --project Gradus.API
+dotnet user-secrets set "ConnectionStrings:GradusDb" "Host=localhost;Port=5432;Database=gradus_db;Username=postgres;Password=secret" --project Gradus.API
+dotnet user-secrets set "ConnectionStrings:Redis" "localhost:6379" --project Gradus.API
+dotnet user-secrets set "Universitas:TenantId" "<azure-tenant-id>" --project Gradus.API
+dotnet user-secrets set "Universitas:ClientId" "<azure-client-id>" --project Gradus.API
+dotnet user-secrets set "Universitas:ClientSecret" "<azure-client-secret>" --project Gradus.API
+dotnet user-secrets set "MediatR:LicenseKey" "<mediatR-license-key>" --project Gradus.API
+
 dotnet run --project Gradus.API   # http://localhost:5002
 ```
 

@@ -6,3 +6,6 @@
 
 ### Health check
 GET {{host}}/health
+
+### Test Universitas Client
+GET {{host}}/test/universitas/cdfecc4c-e651-401e-95ad-79e8547f3230

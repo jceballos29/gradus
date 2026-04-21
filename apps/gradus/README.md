@@ -1,6 +1,6 @@
-# Next.js template
+# Gradus Web
 
-This is a Next.js template with shadcn/ui.
+Frontend de la plataforma de homologación académica. Next.js + shadcn/ui.
 
 ## Adding components
 

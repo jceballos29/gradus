@@ -78,5 +78,19 @@ public record SubjectRecordDto(
     int Period,
     string Term,
     string Status,
-    decimal? FinalGrade
-);
+    string? FinalGrade // Prisma serializa Decimal como string
+)
+{
+    /// <summary>
+    /// Convierte FinalGrade a decimal para la lógica de homologación.
+    /// </summary>
+    public decimal? FinalGradeDecimal =>
+        decimal.TryParse(
+            FinalGrade,
+            System.Globalization.NumberStyles.Any,
+            System.Globalization.CultureInfo.InvariantCulture,
+            out var result
+        )
+            ? result
+            : null;
+}

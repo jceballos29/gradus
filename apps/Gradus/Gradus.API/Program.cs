@@ -1,3 +1,4 @@
+using Gradus.Domain.Interfaces;
 using Gradus.Infrastructure;
 using Gradus.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -37,5 +38,17 @@ app.MapControllers();
 // Endpoint de salud — Docker y Kubernetes lo usan para
 // saber si el servicio está vivo antes de enviarle tráfico
 app.MapGet("/health", () => Results.Ok(new { status = "healthy" })).WithTags("Health");
+
+// Endpoint temporal de prueba — eliminar después de T-205
+app.MapGet(
+        "/test/universitas/{identity}",
+        async (string identity, IUniversitasClient client, CancellationToken ct) =>
+        {
+            var profile = await client.GetStudentProfileAsync(identity, ct);
+            var history = await client.GetStudentHistoryAsync(identity, ct);
+            return Results.Ok(new { profile, history });
+        }
+    )
+    .WithTags("Test");
 
 app.Run();

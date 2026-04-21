@@ -1,4 +1,6 @@
 using Gradus.Domain.Interfaces;
+using Gradus.Infrastructure.Configuration;
+using Gradus.Infrastructure.ExternalServices;
 using Gradus.Infrastructure.Persistence;
 using Gradus.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -30,7 +32,6 @@ public static class DependencyInjection
                 }
             );
 
-            // En desarrollo, loguear queries SQL
 #if DEBUG
             options.EnableSensitiveDataLogging();
             options.EnableDetailedErrors();
@@ -44,6 +45,30 @@ public static class DependencyInjection
 
         // ── Seeder ───────────────────────────────────────────────────────
         services.AddScoped<DataSeeder>();
+
+        // ── Redis ────────────────────────────────────────────────────────
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = configuration.GetConnectionString("Redis");
+            options.InstanceName = "gradus:";
+        });
+
+        // ── Universitas Client (M2M) ──────────────────────────────────────
+        services.Configure<UniversitasOptions>(
+            configuration.GetSection(UniversitasOptions.SectionName)
+        );
+
+        services
+            .AddHttpClient<IUniversitasClient, UniversitasClient>(
+                (sp, client) =>
+                {
+                    var options =
+                        sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<UniversitasOptions>>().Value;
+                    client.BaseAddress = new Uri(options.BaseUrl);
+                    client.Timeout = TimeSpan.FromSeconds(10);
+                }
+            )
+            .AddStandardResilienceHandler(); // Polly: reintentos automáticos
 
         return services;
     }
