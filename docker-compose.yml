@@ -1,0 +1,54 @@
+# docker-compose.yml
+# Entorno de desarrollo — International Polytechnic
+#
+# Por ahora solo infraestructura base.
+# Los servicios de cada app se agregan en la Fase 6.
+
+services:
+
+  postgresql:
+    image: postgres:18-alpine
+    container_name: ip-postgresql
+    environment:
+      POSTGRES_DB: identity_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d identity_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - ip-network
+
+  redis:
+    image: redis:8.4-alpine
+    container_name: ip-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ip-network
+
+volumes:
+  postgres_data:
+    name: ip-postgres-data
+  redis_data:
+    name: ip-redis-data
+
+networks:
+  ip-network:
+    name: ip-network
+    driver: bridge

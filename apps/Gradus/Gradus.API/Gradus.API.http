@@ -1,0 +1,19 @@
+# Gradus API — HTTP Client
+# Requiere extensión "REST Client" en VS Code
+# Los endpoints OAuth se agregan aquí en la Fase 2
+
+@host = http://localhost:5002
+
+### Health check
+GET {{host}}/health
+
+### Test Universitas Client
+GET {{host}}/test/universitas/cdfecc4c-e651-401e-95ad-79e8547f3230
+
+## Preview
+POST {{host}}/api/homologations/preview
+Content-Type: application/json
+{
+    "studentAzureOid": "cdfecc4c-e651-401e-95ad-79e8547f3230",
+    "targetProgramCode": "372V"
+}
