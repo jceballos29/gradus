@@ -62,6 +62,7 @@ export function NotificationPanel() {
     markAsRead,
     markAllAsRead,
     unreadCount,
+    role,
   } = useNotificationContext()
   const router = useRouter()
   const panelRef = useRef<HTMLDivElement>(null)
@@ -139,7 +140,8 @@ export function NotificationPanel() {
                     if (!n.isRead) await markAsRead(n.id)
                     if (n.referenceId) {
                       setIsOpen(false)
-                      router.push(`/student/${n.referenceId}`)
+                      const basePath = role === "COORDINATOR" ? "/coordinator" : "/student"
+                      router.push(`${basePath}/${n.referenceId}`)
                     }
                   }}
                   className={`flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-slate-50 ${

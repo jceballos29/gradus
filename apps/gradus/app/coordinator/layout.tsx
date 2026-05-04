@@ -32,6 +32,7 @@ export default async function CoordinatorLayout({
       azureOid={session.azureOid}
       accessToken={session.accessToken}
       initialNotifications={initialNotifications}
+      role={session.role}
     >
       <div className="flex min-h-screen bg-slate-50">
         <aside className="fixed z-10 flex h-full w-64 flex-col bg-slate-900 text-white">

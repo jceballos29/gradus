@@ -18,6 +18,7 @@ interface NotificationContextValue {
   markAllAsRead: () => Promise<void>;
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
+  role: "STUDENT" | "COORDINATOR";
 }
 
 const NotificationContext = createContext<NotificationContextValue | null>(
@@ -35,6 +36,7 @@ interface Props {
   azureOid: string;
   accessToken: string;
   initialNotifications: Notification[];
+  role: "STUDENT" | "COORDINATOR";
 }
 
 export function NotificationProvider({
@@ -42,6 +44,7 @@ export function NotificationProvider({
   azureOid,
   accessToken,
   initialNotifications,
+  role,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -81,6 +84,7 @@ export function NotificationProvider({
         markAllAsRead,
         isOpen,
         setIsOpen,
+        role,
       }}
     >
       {children}
