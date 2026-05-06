@@ -18,6 +18,13 @@ public interface IEquivalenceRepository
 
     Task<IReadOnlyList<HomologationRule>> GetAllRulesAsync(CancellationToken ct = default);
 
+    Task<HomologationRule?> GetRuleByIdAsync(Guid ruleId, CancellationToken ct = default);
+
+    Task<SubjectEquivalence?> GetEquivalenceByIdAsync(
+        Guid equivalenceId,
+        CancellationToken ct = default
+    );
+
     Task AddRuleAsync(HomologationRule rule, CancellationToken ct = default);
 
     Task UpdateRuleAsync(HomologationRule rule, CancellationToken ct = default);

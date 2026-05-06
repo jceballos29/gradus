@@ -104,6 +104,27 @@ builder
             $"https://login.microsoftonline.com/{config["AzureAd:TenantId"]}/v2.0",
             $"https://sts.windows.net/{config["AzureAd:TenantId"]}/",
         };
+
+        // SignalR WebSocket connections cannot send HTTP headers, so the JS client
+        // passes the Bearer token as ?access_token= in the query string.
+        // Without this handler, Context.User inside the Hub is always anonymous,
+        // IsInRole("coordinador") returns false, and the coordinator never joins
+        // "coordinator-group".
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                if (
+                    !string.IsNullOrEmpty(accessToken)
+                    && context.Request.Path.StartsWithSegments("/hubs")
+                )
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            },
+        };
     });
 
 builder.Services.AddAuthorization();

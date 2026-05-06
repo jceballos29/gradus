@@ -1,11 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Gradus.API.Hubs;
 
-/// <summary>
-/// Hub de SignalR para notificaciones en tiempo real.
-/// El cliente se conecta con su Azure OID como identificador de grupo.
-/// </summary>
+[Authorize]
 public class NotificationHub : Hub
 {
     private readonly ILogger<NotificationHub> _logger;

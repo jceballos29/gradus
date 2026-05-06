@@ -161,6 +161,56 @@ export interface SubjectDetail {
   coordinatorNotes: string | null
 }
 
+// Students (coordinator view)
+export interface StudentRecord {
+  studentAzureOid: string
+  studentName: string
+  studentCode: string
+  sourceProgramCode: string
+  targetProgramCode: string
+  totalRequests: number
+  lastRequestDate: string
+  lastStatus: HomologationStatus
+}
+
+// Rules
+export interface HomologationRule {
+  id: string
+  sourceProgramCode: string
+  targetProgramCode: string
+  minGrade: number
+  maxCreditsPercentage: number
+  requiresSameArea: boolean
+  active: boolean
+  createdAt: string
+  equivalencesCount: number
+}
+
+export interface HomologationRuleDetail {
+  id: string
+  sourceProgramCode: string
+  targetProgramCode: string
+  minGrade: number
+  maxCreditsPercentage: number
+  requiresSameArea: boolean
+  active: boolean
+  createdAt: string
+  updatedAt: string
+  equivalences: SubjectEquivalence[]
+}
+
+export interface SubjectEquivalence {
+  id: string
+  sourceSubjectCode: string
+  sourceSubjectName: string
+  sourceCredits: number
+  targetSubjectCode: string
+  targetSubjectName: string
+  targetCredits: number
+  minGradeOverride: number | null
+  active: boolean
+}
+
 // Notifications
 export interface Notification {
   id: string
@@ -299,6 +349,107 @@ export class GradusApiClient {
    */
   async getRequestDetail(requestId: string): Promise<RequestDetail> {
     return this.request<RequestDetail>(`/api/homologations/${requestId}`)
+  }
+
+  // ── Estudiantes (coordinador) ──────────────────────────────────────────────
+
+  async getAllStudents(search?: string): Promise<StudentRecord[]> {
+    const qs = search ? `?search=${encodeURIComponent(search)}` : ""
+    return this.request<StudentRecord[]>(`/api/students${qs}`)
+  }
+
+  async getStudentRequests(studentOid: string): Promise<RequestSummary[]> {
+    return this.request<RequestSummary[]>(
+      `/api/students/${encodeURIComponent(studentOid)}/requests`
+    )
+  }
+
+  // ── Reglas ─────────────────────────────────────────────────────────────────
+
+  async getRules(): Promise<HomologationRule[]> {
+    return this.request<HomologationRule[]>("/api/rules")
+  }
+
+  async getRuleDetail(ruleId: string): Promise<HomologationRuleDetail> {
+    return this.request<HomologationRuleDetail>(`/api/rules/${ruleId}`)
+  }
+
+  async createRule(data: {
+    sourceProgramCode: string
+    targetProgramCode: string
+    minGrade: number
+    maxCreditsPercentage: number
+    requiresSameArea: boolean
+  }): Promise<{ ruleId: string }> {
+    return this.request<{ ruleId: string }>("/api/rules", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+  }
+
+  async updateRule(
+    ruleId: string,
+    data: {
+      minGrade: number
+      maxCreditsPercentage: number
+      requiresSameArea: boolean
+    }
+  ): Promise<void> {
+    return this.request<void>(`/api/rules/${ruleId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+  }
+
+  async deactivateRule(ruleId: string): Promise<void> {
+    return this.request<void>(`/api/rules/${ruleId}`, { method: "DELETE" })
+  }
+
+  async addEquivalence(
+    ruleId: string,
+    data: {
+      sourceSubjectCode: string
+      sourceSubjectName: string
+      sourceCredits: number
+      targetSubjectCode: string
+      targetSubjectName: string
+      targetCredits: number
+      minGradeOverride: number | null
+    }
+  ): Promise<{ equivalenceId: string }> {
+    return this.request<{ equivalenceId: string }>(
+      `/api/rules/${ruleId}/equivalences`,
+      { method: "POST", body: JSON.stringify(data) }
+    )
+  }
+
+  async updateEquivalence(
+    ruleId: string,
+    equivalenceId: string,
+    data: {
+      sourceSubjectCode: string
+      sourceSubjectName: string
+      sourceCredits: number
+      targetSubjectCode: string
+      targetSubjectName: string
+      targetCredits: number
+      minGradeOverride: number | null
+    }
+  ): Promise<void> {
+    return this.request<void>(
+      `/api/rules/${ruleId}/equivalences/${equivalenceId}`,
+      { method: "PUT", body: JSON.stringify(data) }
+    )
+  }
+
+  async removeEquivalence(
+    ruleId: string,
+    equivalenceId: string
+  ): Promise<void> {
+    return this.request<void>(
+      `/api/rules/${ruleId}/equivalences/${equivalenceId}`,
+      { method: "DELETE" }
+    )
   }
 
   // ── Notificaciones ─────────────────────────────────────────────────────────

@@ -75,6 +75,25 @@ public class HomologationRepository : IHomologationRepository
         );
     }
 
+    public async Task<IReadOnlyList<HomologationRequest>> GetAllStudentRequestsAsync(
+        string? search,
+        CancellationToken ct = default
+    )
+    {
+        var query = _db.HomologationRequests.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim().ToLower();
+            query = query.Where(r =>
+                r.StudentName.ToLower().Contains(term)
+                || r.StudentCode.ToLower().Contains(term)
+            );
+        }
+
+        return await query.OrderByDescending(r => r.CreatedAt).ToListAsync(ct);
+    }
+
     public async Task AddAsync(HomologationRequest request, CancellationToken ct = default)
     {
         await _db.HomologationRequests.AddAsync(request, ct);

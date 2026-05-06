@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import { getSession } from "@/lib/auth"
 import Link from "next/link"
-import { ClipboardList, LogOut, GraduationCap } from "lucide-react"
+import { ClipboardList, LogOut, GraduationCap, Users, BookOpen } from "lucide-react"
 import { createGradusClient } from "@/lib/gradus-api"
 import { NotificationProvider } from "@/components/notifications/NotificationProvider"
 import { NotificationBell } from "@/components/notifications/NotificationBell"
@@ -71,6 +71,20 @@ export default async function CoordinatorLayout({
                   {pending.length}
                 </span>
               )}
+            </Link>
+            <Link
+              href="/coordinator/students"
+              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
+            >
+              <Users className="h-4 w-4 shrink-0" />
+              Estudiantes
+            </Link>
+            <Link
+              href="/coordinator/rules"
+              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
+            >
+              <BookOpen className="h-4 w-4 shrink-0" />
+              Reglas de homologación
             </Link>
           </nav>
 

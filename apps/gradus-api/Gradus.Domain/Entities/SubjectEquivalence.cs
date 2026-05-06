@@ -82,6 +82,34 @@ public class SubjectEquivalence
         };
     }
 
+    public void Update(
+        string sourceSubjectCode,
+        string sourceSubjectName,
+        int sourceCredits,
+        string targetSubjectCode,
+        string targetSubjectName,
+        int targetCredits,
+        decimal? minGradeOverride,
+        string updatedByAzureOid
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceSubjectCode);
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetSubjectCode);
+
+        if (minGradeOverride.HasValue && (minGradeOverride < 0 || minGradeOverride > 5))
+            throw new ArgumentOutOfRangeException(nameof(minGradeOverride));
+
+        SourceSubjectCode = sourceSubjectCode.Trim();
+        SourceSubjectName = sourceSubjectName.Trim();
+        SourceCredits = sourceCredits;
+        TargetSubjectCode = targetSubjectCode.Trim();
+        TargetSubjectName = targetSubjectName.Trim();
+        TargetCredits = targetCredits;
+        MinGradeOverride = minGradeOverride;
+        UpdatedByAzureOid = updatedByAzureOid;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     public void Deactivate(string updatedByAzureOid)
     {
         Active = false;

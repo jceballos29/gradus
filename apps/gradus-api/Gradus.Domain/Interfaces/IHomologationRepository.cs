@@ -30,6 +30,15 @@ public interface IHomologationRepository
         CancellationToken ct = default
     );
 
+    /// <summary>
+    /// Retorna todas las solicitudes de todos los estudiantes.
+    /// Filtra opcionalmente por nombre o código del estudiante.
+    /// </summary>
+    Task<IReadOnlyList<HomologationRequest>> GetAllStudentRequestsAsync(
+        string? search,
+        CancellationToken ct = default
+    );
+
     Task AddAsync(HomologationRequest request, CancellationToken ct = default);
 
     Task UpdateAsync(HomologationRequest request, CancellationToken ct = default);

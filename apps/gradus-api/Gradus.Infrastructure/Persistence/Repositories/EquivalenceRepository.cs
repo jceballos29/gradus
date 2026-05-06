@@ -53,6 +53,27 @@ public class EquivalenceRepository : IEquivalenceRepository
             .ToListAsync(ct);
     }
 
+    public async Task<HomologationRule?> GetRuleByIdAsync(
+        Guid ruleId,
+        CancellationToken ct = default
+    )
+    {
+        return await _db
+            .HomologationRules.Include(r => r.SubjectEquivalences.Where(e => e.Active))
+            .FirstOrDefaultAsync(r => r.Id == ruleId, ct);
+    }
+
+    public async Task<SubjectEquivalence?> GetEquivalenceByIdAsync(
+        Guid equivalenceId,
+        CancellationToken ct = default
+    )
+    {
+        return await _db.SubjectEquivalences.FirstOrDefaultAsync(
+            e => e.Id == equivalenceId,
+            ct
+        );
+    }
+
     public async Task AddRuleAsync(HomologationRule rule, CancellationToken ct = default)
     {
         await _db.HomologationRules.AddAsync(rule, ct);
